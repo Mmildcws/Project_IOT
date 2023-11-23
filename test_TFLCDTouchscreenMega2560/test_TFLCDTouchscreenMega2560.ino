@@ -16,10 +16,14 @@ Works with Arduino 1.6.0 IDE
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 uint16_t tx, ty;     // time for next update
 #include <SoftwareSerial.h>
-
+#include <ArduinoJson.h>
 
 // SoftwareSerial link(15, 14);  //Rx, Tx
-String receive;
+// String receive = "{\"allunit\":\"0\"}";
+String receive ;
+
+
+// receive = '{"allunit":"0"}';
 
 //#include "Temperature.h"
 
@@ -33,6 +37,7 @@ int pct = 0;
 int d[5] = {20, 20, 20, 20, 20};
 uint16_t col[5] = {0x7006, 0xF986, 0x6905, 0x7FF7, 0x024D};
 char str[12];
+const char text[4] = "mild";
 
 
 
@@ -51,59 +56,21 @@ void setup() {
   // tft.textColor(0x1000,0xF010);
   // tft.setTextColor(0x00F0,0xFFE0);
   
-  tft.textTransparent(RA8875_RED);
+  //tft.textTransparent(RA8875_RED);
   tft.setTextSize(200);  
 
 }
 
 void loop() {
   
-  if (Serial3.available() > 0) {
-    // Serial.println("test");
-  receive = Serial3.readStringUntil('.');
-  // Serial.println(Serial3.read());
-  }
-  Serial.println(receive);
-  receive = "";
-  // put your main code here, to run repeatedly:
-  tft.fillScreen(RA8875_WHITE);
-  //tft.setRotation(1);
-  tft.textColor(RA8875_BLACK,RA8875_WHITE);
-  tft.textSetCursor(170, 30);
-  tft.textWrite("Electricity bill",16);
-  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
-  tft.textSetCursor(180, 50); 
-  tft.textWrite("Unit : ",7);
-  tft.textSetCursor(180, 70);
-  tft.textWrite("Cost : ",7);
+  
+  //Serial.println(receive);
+  
 
-  tft.textColor(RA8875_BLACK,RA8875_WHITE);
-  tft.textSetCursor(30, 120);
-  tft.textWrite("Living room",11);
-  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
-  tft.textSetCursor(30, 140); 
-  tft.textWrite("Unit : ",7);
-  tft.textSetCursor(30, 160);
-  tft.textWrite("Cost : ",7);
 
-  tft.textColor(RA8875_BLACK,RA8875_WHITE);
-  tft.textSetCursor(200, 120);
-  tft.textWrite("Bed room 1",10);
-    tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
-  tft.textSetCursor(200, 140); 
-  tft.textWrite("Unit : ",7);
-  tft.textSetCursor(200, 160);
-  tft.textWrite("Cost : ",7);
-
-  tft.textColor(RA8875_BLACK,RA8875_WHITE);
-  tft.textSetCursor(370, 120);
-  tft.textWrite("Bed room 2",10);
-    tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
-  tft.textSetCursor(370, 140); 
-  tft.textWrite("Unit : ",7);
-  tft.textSetCursor(370, 160);
-  tft.textWrite("Cost : ",7);
-  // tft.textWrite(&text,sizeof(text));
+  // Serial.println((char*)receive);
+  
+  // tft.textWrite(text,sizeof(text));
   
 
   //  tft.drawBitmap(350, 70, 10, 70, 180, 120);// - not an adafruitra8875 function
@@ -162,6 +129,80 @@ void loop() {
 
   //   a--;
   // }
-  delay(100);
+  if (Serial3.available() > 0) {
+  // Serial.println("test");
+  receive = Serial3.readString();
+  Serial.println(receive);
+  // Serial.println(Serial3.read());
+  StaticJsonDocument <500> doc;
+  // DynamicJsonDocument doc(1024);
+  deserializeJson(doc, receive );
 
+  
+  // String sensor = doc["allunit"];
+  // Serial.println(receive);
+  // String sum = ;
+  Serial.println((doc["allunit"].as<String>()).length());
+  int Sumallunit = (doc["allunit"].as<String>()).length();
+  // JsonObject object = doc.to<JsonObject>();
+  // Serial.println(object.size());
+  // Serial.println(doc["allunit"].size());
+  // Serial.println(sizeof(sum));
+  const char *allunit = doc["allunit"];
+  const char *allcost = doc["allcost"];
+  
+  const char *Lunit = doc["Lunit"];
+  const char *Lcost = doc["Lcost"];
+  const char *B1unit = doc["B1unit"];
+  const char *B1cost = doc["B1cost"];
+  const char *B2unit = doc["B2unit"];
+  const char *B2cost = doc["B2cost"];
+
+  tft.fillScreen(RA8875_WHITE);
+  //tft.setRotation(1);
+  tft.textColor(RA8875_BLACK,RA8875_WHITE);
+  tft.textSetCursor(170, 30);
+  tft.textWrite("Electricity bill",16);
+  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
+  tft.textSetCursor(180, 50); 
+  tft.textWrite("Unit : ",7);
+  tft.textWrite(allunit,(doc["allunit"].as<String>()).length());
+  tft.textSetCursor(180, 70);
+  tft.textWrite("Cost : ",7);
+  tft.textWrite(allcost,(doc["allcost"].as<String>()).length());
+
+  tft.textColor(RA8875_BLACK,RA8875_WHITE);
+  tft.textSetCursor(10, 120);
+  tft.textWrite("Living room",11);
+  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
+  tft.textSetCursor(10, 140); 
+  tft.textWrite("Unit : ",7);
+  tft.textWrite(Lunit,(doc["Lunit"].as<String>()).length());
+  tft.textSetCursor(10, 160);
+  tft.textWrite("Cost : ",7);
+  tft.textWrite(Lcost,(doc["Lcost"].as<String>()).length());
+
+  tft.textColor(RA8875_BLACK,RA8875_WHITE);
+  tft.textSetCursor(160, 120);
+  tft.textWrite("Bed room 1",10);
+  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
+  tft.textSetCursor(160, 140); 
+  tft.textWrite("Unit : ",7);
+  tft.textWrite(B1unit,(doc["B1unit"].as<String>()).length());
+  tft.textSetCursor(160, 160);
+  tft.textWrite("Cost : ",7);
+  tft.textWrite(B1cost,(doc["B1cost"].as<String>()).length());
+
+  tft.textColor(RA8875_BLACK,RA8875_WHITE);
+  tft.textSetCursor(330, 120);
+  tft.textWrite("Bed room 2",10);
+  tft.textColor(RA8875_MAGENTA,RA8875_WHITE);
+  tft.textSetCursor(330, 140); 
+  tft.textWrite("Unit : ",7);
+  tft.textWrite(B2unit,(doc["B2unit"].as<String>()).length());
+  tft.textSetCursor(330, 160);
+  tft.textWrite("Cost : ",7);
+  tft.textWrite(B2cost,(doc["B2cost"].as<String>()).length());
+
+  }
 }
